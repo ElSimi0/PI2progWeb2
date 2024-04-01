@@ -22,16 +22,34 @@ class Database():
             db.write(str(doc))
             db.write("\n")
             db.close()
-            
-            
-    def modify(self, dato: str):
+    
+    def modify(self, line, newData):
         with open(self.file, "r+") as db:
-            
+            lines = db.readlines()
+            doc = []
+            data = newData.replace(" ", "").split(",")
+            print(data)
+            doc.append(data)
+            if line < 0 or line > len(lines):
+                print("ERROR")
+            else:
+                lines[line - 1] = str(doc) + "\n"
+                db.seek(0)
+                db.truncate() 
+                db.writelines(lines)
             db.close()
             
-            
-    def delete(self):
+    def delete(self, line):
         with open(self.file, "r+") as db:
+            lines = db.readlines()
+            if line < 0 or line > len(lines):
+                print("ERROR")
+            else:
+                del lines[line - 1]
+                db.seek(0)
+                db.truncate() 
+                print(lines)
+                db.writelines(lines)
             db.close()
     def deleteALL(self):
         with open(self.file, "w") as docum:
@@ -57,8 +75,10 @@ def readData(database):
 
 def readLine(database, line):
     with open(database.file, "r") as db:
-        texto = str(db.readline(line)).replace("[", "").replace("]", "").replace("'", "").replace("-", " ")
-        print(texto)
+        lineRead = str(db.readlines(line)).replace("]", "").replace("'", "").replace("-", " ")
+        print(lineRead)
+        #texto = str(db.readline(line)).replace("[", "").replace("]", "").replace("'", "").replace("-", " ")
+        #print(texto)
         db.close()
     return None
 
@@ -85,10 +105,13 @@ while True:
         print("\nHecho\n")
     elif comando == "mod":
         readData(p)
-        datoMod = str(input("¿Que dato desea modificar?: "))
-        p.modify(datoMod)
+        line = int(input("Ingrese el numero de linea: "))
+        newData =  str(input("Ingrese los datos: "))
+        p.modify(line, newData)
     elif comando == "del":
-        pass
+        readData(p)
+        line = int(input("Ingrese el numero de linea: "))
+        p.delete(line)
     elif comando == "break" or comando == "b":
         p.save()
         print("\nGuardado\n")
