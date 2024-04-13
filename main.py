@@ -8,12 +8,8 @@ import core
 
 while True:
     opcion = input("FUNCION: ").lower()
-    if opcion == "fichas":
-        core.menu.Fichas()
     elif opcion == "citas":
         core.menu.Citas()
-    elif opcion == "consultas":
-        core.menu.Consultas()
     elif opcion == "nuevo doctor":
         core.menu.Nuevo_doctor()
     elif opcion == "nuevo paciente":
