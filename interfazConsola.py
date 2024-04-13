@@ -8,11 +8,10 @@ colores = {"rojo": "\033[1;31m",
            "naranja": "\033[38;5;208m",
            "violeta": "\033[38;5;165m"}
 
-def citas(nombre: str, apellido: str, edad: str, tipoSangre: str,historial: str, examenes: bool, examen: dict, clinica: str, modulo: str, area: str, cubiculo: str, fecha: str) -> str:
+def citas(nombre: str, apellido: str, edad: str, tipoSangre: str,historial: str, examenes: str, examen, clinica: str, fecha, docName, doc4Name) -> str:
     nombre = nombre.replace("-", " ")
     apellido = apellido.replace("-", " ")
     #examen $ == resultado, # == N/A
-    fecha = fecha.replace(" ", "-").replace("/", "-").replace(".", "-")
     #cita = f"\n╔══════════════════════╗\n║PACIENTE:             ║\n║»{nombre:^20} ║\n║»{apellido:^20} ║\n║»{edad:^20} ║\n║»{historial:^20} ║\n║»{fecha:^20} ║\n╚══════════════════════╝"
     if len(nombre) >= 26:
         nombre = nombre[0:25]
@@ -22,11 +21,15 @@ def citas(nombre: str, apellido: str, edad: str, tipoSangre: str,historial: str,
         apellido = apellido[0:25]
     else:
         pass
-    
+    historial = str(historial)
     print("\n╔══════════════════════════════════════════════════════╗")
     print("║PACIENTE:                                             ║")
     print(f"║»{nombre:^52} ║")
     print(f"║ {apellido:^52} ║")
+    print("║══════════════════════════════════════════════════════║")
+    print("║DOCTOR:                                               ║")
+    print(f"║»{docName:^52} ║")
+    print(f"║ {doc4Name:^52} ║")
     print("║══════════════════════════════════════════════════════║")
     print("║EDAD:                                                 ║")
     print(f"║»{edad:^52} ║")
@@ -56,14 +59,5 @@ def citas(nombre: str, apellido: str, edad: str, tipoSangre: str,historial: str,
         print(f"║»{exam:^52} ║")
     print("║Fecha de Cita:                                        ║")
     print(f"║»{fecha:^52} ║")
-    print("║Sitio:                                                ║")
-    if cubiculo != "":
-        sitio = f"Clinica: {clinica}, modulo: {modulo}, area: {area}, cubiculo: {cubiculo}"
-    else:
-        sitio = f"Clinica: {clinica}, modulo: {modulo}, area: {area}"
-    if len(sitio) >= 51:
-        print(f"║»{sitio[0:50]:^52} ║")
-        print(f"║»{sitio[50:100]:^52} ║")
-    
     print("╚══════════════════════════════════════════════════════╝")
 

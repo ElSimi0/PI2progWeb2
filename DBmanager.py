@@ -15,35 +15,25 @@ class Database():
         except FileExistsError:
             pass
     def add(self, *args):
-        print("Se va a abrir el txt")
         with open(self.file, "a") as db:
-            """
-            if tipoUsuario != "paciente" and tipoUsuario != "doctor":
-                return "error"
-            else:
-            """
-            
             doc = dict()
             data = list(args)
             ID = security.ID(data[-1], args[0:2])
             doc[ID] = data
-            db.write(str(doc))
-            print(str(doc))
-            db.write("\n")
-            print("Se pudo!!!!")
+            db.write(str(doc) + "\n")
             db.close()
     
-    def modify(self, line, newData): #modifica un elemento de la base de datos
+    def modify(self, line, *args): #modifica un elemento de la base de datos
         with open(self.file, "r+") as db:
             lines = db.readlines() #Lee el archivo, almacena cada linea como un elemento
                                    #de una lista (lines)
-            doc = [] #crea una lista vacia
-            data = newData.replace(" ", "").split(",") #guarda los nuevos datos como
+            doc = dict() #crea una lista vacia
+            data = list(args) #guarda los nuevos datos como
                                                        #una lista
-            print(data)
-            doc.append(data) #la agrega a doc
+            ID = security.ID(data[-1], args[0:2])
+            doc[ID] = data
             if line < 0 or line > len(lines):
-                print("ERROR")
+                print("ERROR => Tipo de Error: Linea fuera de Rango")
             else:
                 lines[line - 1] = str(doc) + "\n"
                 db.seek(0)
@@ -85,27 +75,36 @@ class Database():
 def readData(database): #Esta funcion lee toda la base de datos
     with open(database.file, "r") as db:
         i = 0 #"i" es un contador, asi puedo enumerar cada linea de la base de datos
+        texto = ""
         for lines in db: # => "por cada linea en la base de datos:"
             i += 1 #Le aumento uno a la variable "i"
             #Texto = linea de la base de datos, uso replace() para dejar mas limpio el texto
             texto = lines.replace("[", "").replace("]", "").replace("'", "").replace("-", " ")
-            mensaje = f"{texto}"
+            linea = f"{texto}"
+            texto_color = ""
             if list(texto)[1] == "M":
-                texto_coloreado = f"#{i} | \033[1;36m{mensaje}\033[0m"  # Aplicar color al texto
+                texto_color = f"#{i} | \033[1;36m{linea}\033[0m"  # Aplicar color al texto
             else:
-                texto_coloreado = f"#{i} | \033[1;33m{mensaje}\033[0m"  # Aplicar color al texto
+                texto_color = f"#{i} | \033[1;33m{linea}\033[0m"  # Aplicar color al texto
             
-            print(texto_coloreado, end="")
-        db.close()
-    return texto
+            print(texto_color, end="")
 
-def readLine(database, line): #Esta funcion le solo una linea de la base de datos
-    with open(database.file, "r") as db:
+
+def readLine(database, line=0):
+    texto = ""
+    with open(database.file, "r") as file:
+        lines = file.readlines()
+        if line < 0 or line > len(lines):
+            print("ERROR")
+        else:
+            texto = eval(lines[line-1])
+        print(texto)
+        return texto
+    
+    
+    """
+    if ID == "":
         
-        #Para que sea mas funcional, si la linea a modificar == -1, la funcion
-        #- readLine() retornara el ultimo dato de la base.
-        #si la linea a modificar NO es -1, le resto 1 a "line", ya que esta ultima
-        #-se usa para ver los Indices, osea cuenta desde el 0
         if line == -1:
             pass
         else:
@@ -116,6 +115,8 @@ def readLine(database, line): #Esta funcion le solo una linea de la base de dato
             lineRead = None
         print(lineRead)
         db.close()
-    return 
+    else:
+        pass
+    """
 
 #------------------------------------------------------------
