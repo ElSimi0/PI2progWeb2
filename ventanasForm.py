@@ -6,14 +6,57 @@ Created on Fri Apr 19 01:33:11 2024
 """
 
 import customtkinter as ctk
+from tkinter import ttk
 import os
 
 class Ventanas(ctk.CTkTabview):
     def __init__(self, master):
         super().__init__(master)
+        self.add("Usuarios")
         self.add("Nuevo Doctor")
         self.add("Nuevo Paciente")
-
+        
+        
+        
+        self.frameUsuarios = ctk.CTkFrame(self.tab("Usuarios"), 
+                                              border_width = 4,
+                                              border_color = "#FCFF4D")
+        self.frameUsuarios.grid(row=0, column=0, padx=20, pady=20)
+        
+        self.TreeviewUsers = ttk.Treeview(self.frameUsuarios)
+        self.TreeviewUsers["columns"] = ("ID", "Nombre", "Apellido")
+        
+        self.TreeviewUsers.column("#0", width=50)
+        self.TreeviewUsers.column("ID", width=120)
+        self.TreeviewUsers.column("Nombre", width=200)
+        self.TreeviewUsers.column("Apellido", width=200)
+        
+        self.TreeviewUsers.heading("#0", text="USR")
+        self.TreeviewUsers.heading("ID", text="ID")
+        self.TreeviewUsers.heading("Nombre", text="Nombre")
+        self.TreeviewUsers.heading("Apellido", text="Apellido")
+        
+        self.TreeviewUsers.grid(row=0, column=0, padx=20, pady=20)
+        
+        try:
+            with open("db.txt", "r") as db:
+                i = 0
+                text = ""
+                for lines in db:
+                    text = lines.split(",", maxsplit=3)
+                    userID = text[0]
+                    userName = text[1]
+                    userForename = text[2]
+                    self.TreeviewUsers.insert(parent="", index="end", text=str(userID)[0:2],
+                                              iid=i, values=(userID, userName, userForename))
+                    i += 1
+        except:
+            with open("db.txt", "a+") as db:
+                for indexx, items in db:
+                    self.TreeviewUsers.insert(parent="", index="end", iid=indexx)
+                    
+        
+        
         # NUEVO DOCTOR
         #   INFO PERSONAL ########################################################
         
@@ -202,7 +245,7 @@ class Ventanas(ctk.CTkTabview):
         self.SubirNuDocP.grid(row=1, column=0, padx=20, pady=10, columnspan = 3)
         
         self.error = None
-        
+    
     def openError(self, typeError):
         if self.error == None or not self.error.winfo_exists():
             self.error = ERROR(typeError)
@@ -285,12 +328,24 @@ class Ventanas(ctk.CTkTabview):
             try:
                 with open(fr"{os.getcwd()}\db.txt", "a") as db:
                     db.write(str(newDoc) + "\n")
+                    text = str(newDoc).split(",", maxsplit=3)
+                    userID = text[0]
+                    userName = text[1]
+                    userForename = text[2]
+                    self.TreeviewUsers.insert(parent="", index="end", text=str(userID)[0:2],
+                                              iid=-1, values=(userID, userName, userForename))
                     db.close()
                     
             except FileNotFoundError:
                 print("no existe")
                 with open(fr"{os.getcwd()}\db.txt", "w") as db:
                     db.write(str(newDoc) + "\n")
+                    text = str(newDoc).split(",", maxsplit=3)
+                    userID = text[0]
+                    userName = text[1]
+                    userForename = text[2]
+                    self.TreeviewUsers.insert(parent="", index="end", text=str(userID)[0:2],
+                                              iid=-1, values=(userID, userName, userForename))
                     db.close()
             succes = ctk.CTkToplevel(self)        
             succes.geometry("200x100")
@@ -365,19 +420,31 @@ class Ventanas(ctk.CTkTabview):
             try:
                 with open(fr"{os.getcwd()}\db.txt", "a") as db:
                     db.write(str(newPa) + "\n")
+                    text = str(newPa).split(",", maxsplit=3)
+                    userID = text[0]
+                    userName = text[1]
+                    userForename = text[2]
+                    self.TreeviewUsers.insert(parent="", index="end", text=str(userID)[0:2],
+                                              iid=-1, values=(userID, userName, userForename))
                     db.close()
                     
             except FileNotFoundError:
                 print("no existe")
                 with open(fr"{os.getcwd()}\db.txt", "w") as db:
                     db.write(str(newPa) + "\n")
+                    text = str(newPa).split(",", maxsplit=3)
+                    userID = text[0]
+                    userName = text[1]
+                    userForename = text[2]
+                    self.TreeviewUsers.insert(parent="", index="end", text=str(userID)[0:2],
+                                              iid=-1, values=(userID, userName, userForename))
                     db.close()
             succes = ctk.CTkToplevel(self)        
             succes.geometry("200x100")
             succes.configure(fg_color="#FFFFFF")
             succes.title("SUCCES")
             succes.resizable(False, False)
-            succesLabel = ctk.CTkLabel(succes, text="DOCTOR\nAÑADIDO")
+            succesLabel = ctk.CTkLabel(succes, text="PACIENTE\nAÑADIDO")
             succesLabel.grid(row=0, column=0, padx=20, pady=20)
         
         ############ GUARDAR DATOS ############
@@ -393,7 +460,8 @@ class ERROR(ctk.CTkToplevel):
         ctk.CTkLabel(self, text=f"ERROR:\n{typeError}",
                      text_color="#000000").grid(row=0, column=0, padx=20, pady=20)
         self.focus()
-
+        
+        
 class Doctor():
     def __init__(self, nombre, apellido, numero, correo, edad, area, centro, turno, gs, historial):
         self.nombre = nombre
@@ -411,7 +479,7 @@ class Doctor():
         self.ID = f"MC{self.idAT}"
         
     def __str__(self):
-        return f"{self.ID}: {self.nombre}, {self.apellido}, {self.numero}, {self.correo}, {self.edad} años, {self.area}, {self.centroMedico}, {self.turno}, {self.grupoSanguineo}, ({self.historialMedico})"
+        return f"{self.ID}, {self.nombre}, {self.apellido}, {self.numero}, {self.correo}, {self.edad} años, {self.area}, {self.centroMedico}, {self.turno}, {self.grupoSanguineo}, ({self.historialMedico})"
     
 class Paciente():
     def __init__(self, nombre, apellido, numero, correo, edad, gs, historial):
