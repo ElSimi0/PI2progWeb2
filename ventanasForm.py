@@ -7,7 +7,9 @@ Created on Fri Apr 19 01:33:11 2024
 
 import customtkinter as ctk
 from tkinter import ttk
+import tkinter as tk
 import os
+import pyperclip as ppclp
 
 class Ventanas(ctk.CTkTabview):
     def __init__(self, master):
@@ -18,7 +20,7 @@ class Ventanas(ctk.CTkTabview):
         
         
         
-        self.frameUsuarios = ctk.CTkFrame(self.tab("Usuarios"), 
+        self.frameUsuarios = ctk.CTkFrame(self.tab("Usuarios"),
                                               border_width = 4,
                                               border_color = "#FCFF4D")
         self.frameUsuarios.grid(row=0, column=0, padx=20, pady=20)
@@ -38,6 +40,43 @@ class Ventanas(ctk.CTkTabview):
         
         self.TreeviewUsers.grid(row=0, column=0, padx=20, pady=20)
         
+        self.scrollbar = ttk.Scrollbar(self.frameUsuarios, orient="vertical", command=self.TreeviewUsers.yview)
+        self.scrollbar.grid(row=0, column=1, padx=20, pady=20, sticky="ns")
+        
+#python C:\Users\sameg\Documents\1Prepa\SEMESTRE4\ProgramacionWeb\AI2\int.py
+        
+        self.TreeviewUsers.configure(yscrollcommand=self.scrollbar.set)
+        
+        style = ttk.Style()
+        #style.theme_use("default")  # Usar el tema por defecto de ttk
+
+        # Configurar el estilo de la Scrollbar
+        style.configure("Vertical.TScrollbar",
+                background="#303030",
+                darkcolor="#303030",
+                lightcolor="#303030",
+                troughcolor="#303030")
+
+        # Aplicar el estilo a la Scrollbar
+        self.scrollbar.configure(style="Vertical.TScrollbar")
+        
+        style.configure("Treeview",
+                background="#333333",
+                foreground="#FFFFFF",
+                fieldbackground="#FF993F")
+        style.map("Treeview",
+                  background = [("selected", "#85B0B9")])
+        self.TreeviewUsers.configure(style="Treeview")
+        
+        self.TreeviewUsers.bind("<Button-3>", self.menuClickD)
+        
+        self.borrarBase = ctk.CTkButton(self.tab("Usuarios"), text="Limpiar Base de Datos", 
+                                    command=self.delete)
+        self.borrarBase.grid(row=1, column=0, padx=20, pady=20)
+        
+        
+
+        
         try:
             with open("db.txt", "r") as db:
                 i = 0
@@ -45,15 +84,27 @@ class Ventanas(ctk.CTkTabview):
                 for lines in db:
                     text = lines.split(",", maxsplit=3)
                     userID = text[0]
-                    userName = text[1]
-                    userForename = text[2]
-                    self.TreeviewUsers.insert(parent="", index="end", text=str(userID)[0:2],
-                                              iid=i, values=(userID, userName, userForename))
+                    if str(userID)[0:2] == "PC" or str(userID)[0:2] == "MC": 
+                        userName = text[1]
+                        userForename = text[2]
+                        self.TreeviewUsers.insert(parent="", index="end", text=str(userID)[0:2],
+                                                  iid=i, values=(userID, userName, userForename))
                     i += 1
         except:
             with open("db.txt", "a+") as db:
-                for indexx, items in db:
-                    self.TreeviewUsers.insert(parent="", index="end", iid=indexx)
+                i = 0
+                text = ""
+                for lines in db:
+                    text = lines.split(",", maxsplit=3)
+                    userID = text[0]
+                    if str(userID)[0:2] == "PC" or str(userID)[0:2] == "MC": 
+                        userName = text[1]
+                        userForename = text[2]
+                        self.TreeviewUsers.insert(parent="", index="end", text=str(userID)[0:2],
+                                                  iid=i, values=(userID, userName, userForename))
+                    i += 1
+                    
+        
                     
         
         
@@ -251,6 +302,64 @@ class Ventanas(ctk.CTkTabview):
             self.error = ERROR(typeError)
         else:
             self.error.focus()
+    def menuClickD(self, event):
+        
+        self.item = self.TreeviewUsers.identify('item', event.x, event.y)
+        self.selection = self.TreeviewUsers.selection()
+        
+        
+        if self.item:
+            self.menuCD = tk.Menu(self.TreeviewUsers, tearoff=0)
+            self.menuCD.add_command(label="Copy", command=self.copyID)
+            self.menuCD.add_command(label="Nueva Cita", command=self.nuevaCita)
+            self.menuCD.add_command(label="Nueva Consulta", command=self.nuevaConsulta)
+            self.menuCD.add_separator()
+            self.menuCD.add_command(label="Eliminar")
+            self.menuCD.post(event.x_root, event.y_root)
+            
+            self.selection = self.TreeviewUsers.selection()
+        
+            
+        if self.selection:
+            self.objeto = self.selection[0]
+            # Get the item's options
+            self.options = self.TreeviewUsers.item(self.objeto)
+    
+            # Print the item's text and user data
+            self.idTaken = self.options['values'][0]
+    
+    def nuCita(self):
+        with open(fr"{os.getcwd()}\db.txt", "r") as db:
+            #print("Sigue el FOR")
+            allItems = db.readlines()
+        for items in allItems:
+            self.itemID = str(items).split(",")[0]
+            #print(f"Current ID iterable:{self.itemID}\nItem Selected: {self.idTaken}")
+            if self.itemID != self.idTaken:
+                pass
+            else:
+                crearCita = Cita()
+                break
+    def nuConsulta(self):
+        with open(fr"{os.getcwd()}\db.txt", "r") as db:
+            #print("Sigue el FOR")
+            allItems = db.readlines()
+        for items in allItems:
+            self.itemID = str(items).split(",")[0]
+            #print(f"Current ID iterable:{self.itemID}\nItem Selected: {self.idTaken}")
+            if self.itemID != self.idTaken:
+                pass
+            else:
+                crearConsulta = Consultas()
+                break
+    
+    def copyID(self):
+        ppclp.copy(self.idTaken)
+    def nuevaCita(self):
+        self.nuCita()
+    def nuevaConsulta(self):
+        self.nuConsulta()
+        
     def submitDoc(self):
         self.allGood = True
         self.name = str(self.nombre.get()).strip()
@@ -283,7 +392,7 @@ class Ventanas(ctk.CTkTabview):
         try:
             int(self.number)
         except ValueError:
-            self.openError("Numero Invalido: Use Numeros")
+            self.openError("Numero Invalido: Use Numeros\nPD: ¿Eres tonto (°_o)?")
             self.allGood = False
             
         if "@" in self.mail:
@@ -322,43 +431,44 @@ class Ventanas(ctk.CTkTabview):
         #######################################
         
         if self.allGood:    
-            newDoc = Doctor(self.name, self.forename, self.number, self.mail, 
+            self.newDoc = Doctor(self.name, self.forename, self.number, self.mail, 
                   self.age, self.areaDoc, self.hospitalCenter, self.turn,
                   self.blood, self.medicH)
             try:
                 with open(fr"{os.getcwd()}\db.txt", "a") as db:
-                    db.write(str(newDoc) + "\n")
-                    text = str(newDoc).split(",", maxsplit=3)
-                    userID = text[0]
-                    userName = text[1]
-                    userForename = text[2]
-                    self.TreeviewUsers.insert(parent="", index="end", text=str(userID)[0:2],
-                                              iid=-1, values=(userID, userName, userForename))
+                    db.write(str(self.newDoc) + "\n")
+                    self.text = str(self.newDoc).split(",", maxsplit=3)
+                    self.userID = self.text[0]
+                    self.userName = self.text[1]
+                    self.userForename = self.text[2]
+                    self.TreeviewUsers.insert(parent="", index="end", text=str(self.userID)[0:2],
+                                              iid=str(self.userID), values=(self.userID, self.userName, 
+                                                              self.userForename))
                     db.close()
                     
             except FileNotFoundError:
                 print("no existe")
                 with open(fr"{os.getcwd()}\db.txt", "w") as db:
-                    db.write(str(newDoc) + "\n")
-                    text = str(newDoc).split(",", maxsplit=3)
-                    userID = text[0]
-                    userName = text[1]
-                    userForename = text[2]
-                    self.TreeviewUsers.insert(parent="", index="end", text=str(userID)[0:2],
-                                              iid=-1, values=(userID, userName, userForename))
+                    db.write(str(self.newDoc) + "\n")
+                    self.text = str(self.newDoc).split(",", maxsplit=3)
+                    self.userID = self.text[0]
+                    self.userName = self.text[1]
+                    self.userForename = self.text[2]
+                    self.TreeviewUsers.insert(parent="", index="end", text=str(self.userID)[0:2],
+                                              iid=str(self.userID), values=(self.userID, self.userName, 
+                                                              self.userForename))
                     db.close()
             succes = ctk.CTkToplevel(self)        
             succes.geometry("200x100")
             succes.configure(fg_color="#FFFFFF")
             succes.title("SUCCES")
             succes.resizable(False, False)
-            succesLabel = ctk.CTkLabel(succes, text="DOCTOR\nAÑADIDO")
+            succesLabel = ctk.CTkLabel(succes, text="DOCTOR\nAÑADIDO",
+                                       text_color="#21041A")
             succesLabel.grid(row=0, column=0, padx=20, pady=20)
             
             
-        
         ############ GUARDAR DATOS ############
-        
         
         
     def submitPa(self):
@@ -420,44 +530,74 @@ class Ventanas(ctk.CTkTabview):
             try:
                 with open(fr"{os.getcwd()}\db.txt", "a") as db:
                     db.write(str(newPa) + "\n")
-                    text = str(newPa).split(",", maxsplit=3)
-                    userID = text[0]
-                    userName = text[1]
-                    userForename = text[2]
-                    self.TreeviewUsers.insert(parent="", index="end", text=str(userID)[0:2],
-                                              iid=-1, values=(userID, userName, userForename))
+                    self.text = str(newPa).split(",", maxsplit=3)
+                    self.userID = self.text[0]
+                    self.userName = self.text[1]
+                    self.userForename = self.text[2]
+                    self.TreeviewUsers.insert(parent="", index="end", text=str(self.userID)[0:2],
+                                              iid=str(self.userID), values=(self.userID, self.userName, 
+                                                              self.userForename))
                     db.close()
                     
             except FileNotFoundError:
                 print("no existe")
                 with open(fr"{os.getcwd()}\db.txt", "w") as db:
-                    db.write(str(newPa) + "\n")
-                    text = str(newPa).split(",", maxsplit=3)
-                    userID = text[0]
-                    userName = text[1]
-                    userForename = text[2]
-                    self.TreeviewUsers.insert(parent="", index="end", text=str(userID)[0:2],
-                                              iid=-1, values=(userID, userName, userForename))
+                    db.write(str(self.newPa) + "\n")
+                    self.text = str(self.newPa).split(",", maxsplit=3)
+                    self.userID = self.text[0]
+                    self.userName = self.text[1]
+                    self.userForename = self.text[2]
+                    self.TreeviewUsers.insert(parent="", index="end", text=str(self.userID)[0:2],
+                                              iid=str(self.userID), values=(self.userID, self.userName, 
+                                                              self.userForename))
                     db.close()
             succes = ctk.CTkToplevel(self)        
             succes.geometry("200x100")
             succes.configure(fg_color="#FFFFFF")
             succes.title("SUCCES")
             succes.resizable(False, False)
-            succesLabel = ctk.CTkLabel(succes, text="PACIENTE\nAÑADIDO")
+            succesLabel = ctk.CTkLabel(succes, text="PACIENTE\nAÑADIDO\n(งò⏠ó)ง",
+                                       text_color="#21041A")
+            
             succesLabel.grid(row=0, column=0, padx=20, pady=20)
         
-        ############ GUARDAR DATOS ############
+    def delete(self):
+        self.passwordInput = EliminarDBwindow()
+        
+class EliminarDBwindow(ctk.CTkToplevel):
+    def __init__(self):
+        super().__init__()
+        self.geometry("400x250")
+        self.configure(fg_color="#FF5C5C")
+        self.title("Limpiar Base de Datos")
+        self.resizable(False, False)
+        self.attributes('-topmost',1)
+        ctk.CTkLabel(self, text="Ingrese la contraseña",
+                     text_color="#000000").grid(row=0, column=0, padx=20, pady=20)
+        self.password = ctk.CTkEntry(self, show="*",
+                                     placeholder_text="CONTRASEÑA")
+        self.password.grid(row=1, column=0, padx=20, pady=20)
+        
+        self.delDBbutton = ctk.CTkButton(self, text="Send", command=self.eliminar)
+        self.delDBbutton.grid(row=2, column=0, padx=20, pady=20)
+    def eliminar(self):
+        if self.password.get() == "password":
+            with open(fr"{os.getcwd()}\db.txt", "w") as db:
+                db.write("")
+                db.close()
+            self.destroy()
+        else:
+            self.destroy()
 
 class ERROR(ctk.CTkToplevel):
     def __init__(self, typeError):
         super().__init__()
         self.geometry("200x100")
         self.configure(fg_color="#FFFFFF")
-        self.title("ERROR")
+        self.title("(งツ)ว")
         self.resizable(False, False)
         
-        ctk.CTkLabel(self, text=f"ERROR:\n{typeError}",
+        ctk.CTkLabel(self, text=f"ERROR (งツ)ว :\n{typeError}\n  (ง︡'-'︠)ง",
                      text_color="#000000").grid(row=0, column=0, padx=20, pady=20)
         self.focus()
         
@@ -474,6 +614,8 @@ class Doctor():
         self.turno = turno
         self.grupoSanguineo = gs
         self.historialMedico = historial
+        self.citas = ""
+        self.consultas = ""
         
         self.idAT = str(format(id(self.nombre + self.apellido + self.edad + self.area)))
         self.ID = f"MC{self.idAT}"
@@ -490,6 +632,8 @@ class Paciente():
         self.edad = edad
         self.grupoSanguineo = gs
         self.historialMedico = historial
+        self.citas = ""
+        self.consultas = ""
         
         self.idAT = str(format(id(self.nombre + self.apellido + self.edad + self.grupoSanguineo)))
         self.ID = f"PC{self.idAT}"
@@ -497,6 +641,86 @@ class Paciente():
     def __str__(self):
         return f"{self.ID}, {self.nombre}, {self.apellido}, {self.numero}, {self.correo}, {self.edad} años, {self.grupoSanguineo}, ({self.historialMedico})"
         
+class Cita(ctk.CTkToplevel):
+    def __init__(self):
+        super().__init__()
+        self.geometry("720x400")
+        self.configure(fg_color="#3E554E")
+        self.title("Nueva Cita")
+        self.resizable(False, False)
+        self.focus()
         
+        self.idPaciente = ctk.CTkEntry(self, placeholder_text="ID DEL PACIENTE")
+        self.idPaciente.grid(row=1, column=0, padx=20, pady=10)
+        
+        self.idDoctor = ctk.CTkEntry(self, placeholder_text="ID DEL DOCTOR")
+        self.idDoctor.grid(row=1, column=1, padx=20, pady=10)
+        
+        self.problemas = ctk.CTkTextbox(self, width=200, height=125)
+        self.problemas.grid(row=2, column=0, padx=20, pady=10, sticky="nsew", columnspan=2)
+        
+        self.submitIDs = ctk.CTkButton(self, text="Send", command=self.sendIDs)
+        self.submitIDs.grid(row=3, column=0, padx=20, pady=10)
+    
+    def sendIDs(self):
+        self.idsRGood = False
+        if str(self.idPaciente.get())[0:2] == "PC":
+            self.idsRGood = True
+        else:
+            self.idsRGood = False
+        
+        if str(self.idDoctor.get())[0:2] == "MC":
+            self.idsRGood = True
+        else:
+            self.idsRGood = False
+        
+        if self.idsRGood:
+            with open(fr"{os.getcwd()}\db.txt", "a") as db:
+                db.write(f"CITA, Paciente: {self.idPaciente.get()}, Doctor: {self.idDoctor.get()}, [{self.problemas.get('1.0','end-1c')}]\n")
+                db.close()
+        self.destroy()
+
+class Consultas(ctk.CTkToplevel):
+    def __init__(self):
+        super().__init__()
+        self.geometry("720x400")
+        self.configure(fg_color="#3E554E")
+        self.title("Nueva Consulta")
+        self.resizable(False, False)
+        self.focus()
+        
+        self.idPaciente = ctk.CTkEntry(self, placeholder_text="ID DEL PACIENTE")
+        self.idPaciente.grid(row=1, column=0, padx=20, pady=10)
+        
+        self.idDoctor = ctk.CTkEntry(self, placeholder_text="ID DEL DOCTOR")
+        self.idDoctor.grid(row=1, column=1, padx=20, pady=10)
+        
+        self.problemas = ctk.CTkTextbox(self, width=200, height=125)
+        self.problemas.grid(row=2, column=0, padx=20, pady=10, sticky="nsew", columnspan=2)
+        
+        self.submitIDs = ctk.CTkButton(self, text="Send", command=self.sendIDs)
+        self.submitIDs.grid(row=3, column=0, padx=20, pady=10)
+    
+    def sendIDs(self):
+        self.idsRGood = False
+        if str(self.idPaciente.get())[0:2] == "PC":
+            self.idsRGood = True
+        else:
+            self.idsRGood = False
+        
+        if str(self.idDoctor.get())[0:2] == "MC":
+            self.idsRGood = True
+        else:
+            self.idsRGood = False
+        
+        if self.idsRGood:
+            with open(fr"{os.getcwd()}\db.txt", "a") as db:
+                db.write(f"CONSULTA, Paciente: {self.idPaciente.get()}, Doctor: {self.idDoctor.get()}, [{self.problemas.get('1.0','end-1c')}]\n")
+                db.close()
+        self.destroy()
+
+class Fichas(ctk.CTkToplevel):
+    def __init__(self):
+        self.
         
         
